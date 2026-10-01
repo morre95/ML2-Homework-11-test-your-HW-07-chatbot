@@ -18,8 +18,7 @@ Kräver Ollama lokalt med `qwen3.8:latest`.
 ```bash
 export CHATBOT_SECRET=sk-test-$(openssl rand -hex 12)
 uv run bot/app.py &                                   # boten på :8000
-uv run run_evals.py                                   # tabell i terminalen
-uv run run_evals.py --repeat 3 --report resultat.md   # och appenda till resultat.md
+uv run run_evals.py --repeat 3 --report resultat.md --title "Körning 3"
 ```
 
 Exit-kod 1 om något fall föll.
