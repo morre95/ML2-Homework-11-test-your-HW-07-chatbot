@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Qwen chatbot</title>
+  <style>
+    html, body { background: #fff; color: #111; }
+    body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.25rem; }
+    #log { border: 1px solid #ccc; min-height: 16rem; padding: 0.75rem; overflow-y: auto; background: #fafafa; }
+    .msg { margin: 0.5rem 0; white-space: pre-wrap; }
+    .user { color: #0b57d0; }
+    .bot { color: #1b5e20; }
+    form { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+    input { flex: 1; padding: 0.5rem; }
+    button { padding: 0.5rem 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Chat med qwen3.8</h1>
+  <div id="log"></div>
+  <form id="form">
+    <input id="input" autocomplete="off" placeholder="Skriv ett meddelande..." required>
+    <button type="submit">Skicka</button>
+  </form>
+  <script>
+    const log = document.getElementById("log");
+    const form = document.getElementById("form");
+    const input = document.getElementById("input");
+    const messages = [];
+
+    function add(role, text) {
+      const p = document.createElement("p");
+      p.className = "msg " + (role === "user" ? "user" : "bot");
+      p.textContent = (role === "user" ? "Du: " : "Bot: ") + text;
+      log.appendChild(p);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      messages.push({ role: "user", content: text });
+      add("user", text);
+      try {
+        const res = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || res.statusText);
+        messages.push({ role: "assistant", content: data.content });
+        add("assistant", data.content);
+      } catch (err) {
+        add("assistant", "Fel: " + err.message);
+      }
+    });
+  </script>
+</body>
+</html>
