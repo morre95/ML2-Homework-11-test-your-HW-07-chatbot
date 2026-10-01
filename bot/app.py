@@ -18,6 +18,22 @@ INDEX_PATH = Path(__file__).with_name("index.html")
 SECRET = os.environ["CHATBOT_SECRET"]
 PROMPTS = Environment(loader=FileSystemLoader(Path(__file__).with_name("prompts")))
 SYSTEM_PROMPT = PROMPTS.get_template("system.j2").render(secret=SECRET)
+MAX_MESSAGE_CHARS = 4000
+
+
+def validate_messages(messages):
+    """Return an error message if the chat history is unusable, else None."""
+    if not isinstance(messages, list) or not messages:
+        return "messages must be a non-empty array"
+    for msg in messages:
+        if not isinstance(msg, dict) or not isinstance(msg.get("content"), str):
+            return "each message needs a string content"
+        if len(msg["content"]) > MAX_MESSAGE_CHARS:
+            return f"message longer than {MAX_MESSAGE_CHARS} characters"
+    last = messages[-1]
+    if last.get("role") != "user" or not last["content"].strip():
+        return "the last message must be a non-empty user question"
+    return None
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -44,6 +60,10 @@ class Handler(BaseHTTPRequestHandler):
             messages = payload["messages"]
         except (json.JSONDecodeError, KeyError, UnicodeDecodeError):
             self._json(400, {"error": "Expected JSON with a messages array"})
+            return
+        error = validate_messages(messages)
+        if error:
+            self._json(400, {"error": error})
             return
 
         request_body = json.dumps(
