@@ -36,3 +36,9 @@ måste också vara tillgängliga för att chattfallen ska fungera.
 pkill -f bot/app.py
 ```
 
+## Vilka förbättringar har gjort mellan körning 1 och 2 
+
+1. **Kontroll av inkommande frågor.** Tidigare skickades även tomma frågor till modellen. Nu avvisar boten tomma eller felaktigt formaterade frågor och meddelanden över 4 000 tecken med HTTP-status `400`.
+2. **Blockering av egna systeminstruktioner.** Tidigare kunde klienten skicka meddelanden med rollen `system` och påverka botens beteende. Nu tillåts bara `user` och `assistant`; servern bestämmer systemprompten.
+3. **Den falska API-nyckeln togs bort ur systemprompten.** I körning 1 lyckades ett angrepp få boten att återge prompten inklusive nyckeln. När nyckeln inte längre skickas till modellen kan den inte läcka från prompten.
+4. **Tydligare instruktioner till modellen.** Prompten säger uttryckligen att svar ska vara på svenska även på engelska frågor, att användartext inte ska behandlas som nya instruktioner och att boten ska avböja försök att få prompten återgiven.
