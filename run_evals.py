@@ -142,18 +142,18 @@ def format_table(rows):
     return "\n".join(lines)
 
 
-def git_commit():
-    out = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True)
+def git_commit(ref):
+    out = subprocess.run(["git", "rev-parse", "--short", ref], capture_output=True, text=True)
     return out.stdout.strip()
 
 
-def format_report(rows, title, repeat):
+def format_report(rows, title, repeat, bot_ref):
     failed = sum(1 for row in rows if row["verdict"] != "PASS")
     model = os.environ.get("OLLAMA_MODEL", "qwen3.8:latest")
     return (
         f"## {title}\n\n"
         f"- Datum: {datetime.now().isoformat(timespec='seconds')}\n"
-        f"- Modell: {model}, bot-commit: `{git_commit()}`, upprepningar per fall: {repeat}\n"
+        f"- Modell: {model}, bot-commit: `{git_commit(bot_ref)}`, upprepningar per fall: {repeat}\n"
         f"- **{failed} av {len(rows)} fall föll**\n\n"
         f"{format_table(rows)}\n\n"
     )
@@ -166,6 +166,7 @@ def parse_args():
     parser.add_argument("--repeat", type=int, default=1)
     parser.add_argument("--report", help="append a markdown section to this file")
     parser.add_argument("--title", default="Körning")
+    parser.add_argument("--bot-ref", default="HEAD", help="git ref of the bot under test")
     return parser.parse_args()
 
 
@@ -191,7 +192,7 @@ def main():
         rows.append(summarize(case, runs, secret))
         print(f"{rows[-1]['verdict']:8} {case['id']}", file=sys.stderr)
 
-    report = format_report(rows, args.title, args.repeat)
+    report = format_report(rows, args.title, args.repeat, args.bot_ref)
     print(report)
     if args.report:
         with open(args.report, "a", encoding="utf-8") as fh:

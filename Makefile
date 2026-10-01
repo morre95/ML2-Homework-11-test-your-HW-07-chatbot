@@ -12,6 +12,7 @@ AFTER_PORT := 8000
 DEMO_DIR := .demo
 PYTHON := .venv/bin/python
 REPEAT ?= 3
+REPORT ?= resultat.md
 
 .PHONY: help warmup before after diff stop test
 
@@ -36,12 +37,12 @@ before: $(PYTHON)
 	@rm -rf $(DEMO_DIR)/before && mkdir -p $(DEMO_DIR)/before
 	@git archive $(BEFORE_REF) bot | tar -x -C $(DEMO_DIR)/before
 	@$(MAKE) --no-print-directory _start NAME=before APP=$(DEMO_DIR)/before/bot/app.py PORT=$(BEFORE_PORT)
-	-$(PYTHON) run_evals.py --repeat $(REPEAT) --title "Före (körning 1)" --url http://localhost:$(BEFORE_PORT)/chat
+	-$(PYTHON) run_evals.py --repeat $(REPEAT) --report $(REPORT) --bot-ref $(BEFORE_REF) --title "Demo – före fixarna" --url http://localhost:$(BEFORE_PORT)/chat
 	@echo "Boten från körning 1 kör på http://localhost:$(BEFORE_PORT)"
 
 after: $(PYTHON)
 	@$(MAKE) --no-print-directory _start NAME=after APP=bot/app.py PORT=$(AFTER_PORT)
-	-$(PYTHON) run_evals.py --repeat $(REPEAT) --title "Efter (körning 2)" --url http://localhost:$(AFTER_PORT)/chat
+	-$(PYTHON) run_evals.py --repeat $(REPEAT) --report $(REPORT) --title "Demo – efter fixarna" --url http://localhost:$(AFTER_PORT)/chat
 	@echo "Nuvarande boten kör på http://localhost:$(AFTER_PORT)"
 
 diff:

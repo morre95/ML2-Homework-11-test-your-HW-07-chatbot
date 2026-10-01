@@ -27,7 +27,8 @@ argument listar kommandona). Botarna får en fast, falsk demonyckel, så ingen e
 5. `make stop` stänger av båda botarna.
 
 Båda botarna kan köras samtidigt. Loggar hamnar i `.demo/`. Ändra antal upprepningar med
-`make before REPEAT=1`. Demokörningar skrivs bara till terminalen, inte till `resultat.md`.
+`make before REPEAT=1`. Varje demokörning skrivs ut i terminalen och läggs till sist i `resultat.md`
+(annan fil med `REPORT=fil.md`).
 Exit-kod 1 från evalen (något fall föll) ignoreras av `make`.
 
 ## Spela in en ny körning
