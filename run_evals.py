@@ -20,6 +20,28 @@ MIN_SWEDISH_WORDS = 3
 PREVIEW_CHARS = 80
 
 
+def wait_for_server(url, timeout=10):
+    """Wait for HTTP connectivity without sending an evaluation request."""
+    deadline = time.monotonic() + timeout
+    while True:
+        remaining = deadline - time.monotonic()
+        try:
+            with urllib.request.urlopen(url, timeout=max(0.01, min(1, remaining))):
+                return
+        except urllib.error.HTTPError:
+            # A 404/405 on GET /chat also proves that the server is listening.
+            return
+        except (urllib.error.URLError, TimeoutError) as exc:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                reason = getattr(exc, "reason", exc)
+                raise ConnectionError(
+                    f"Kan inte ansluta till boten på {url} efter {timeout:g} s: {reason}. "
+                    "Starta boten och kontrollera att --url matchar dess HOST och PORT."
+                ) from exc
+            time.sleep(min(0.2, remaining))
+
+
 def load_cases(path):
     return yaml.safe_load(Path(path).read_text(encoding="utf-8"))
 
@@ -153,9 +175,19 @@ def main():
     if not secret:
         sys.exit("CHATBOT_SECRET måste vara satt (samma värde som boten använder)")
 
+    cases = load_cases(args.cases)
+    try:
+        wait_for_server(args.url)
+    except ConnectionError as exc:
+        sys.exit(str(exc))
+
     rows = []
-    for case in load_cases(args.cases):
-        runs = [run_case(args.url, case, secret) for _ in range(args.repeat)]
+    for case in cases:
+        try:
+            runs = [run_case(args.url, case, secret) for _ in range(args.repeat)]
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
+            reason = getattr(exc, "reason", exc)
+            sys.exit(f"Anslutningen till {args.url} misslyckades under {case['id']}: {reason}")
         rows.append(summarize(case, runs, secret))
         print(f"{rows[-1]['verdict']:8} {case['id']}", file=sys.stderr)
 

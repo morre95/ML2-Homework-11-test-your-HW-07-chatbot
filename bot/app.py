@@ -110,5 +110,6 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print(f"Chatbot listening on {HOST}:{PORT} -> {OLLAMA_URL} ({MODEL})")
-    ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()
+    with ThreadingHTTPServer((HOST, PORT), Handler) as server:
+        print(f"Chatbot listening on {HOST}:{PORT} -> {OLLAMA_URL} ({MODEL})", flush=True)
+        server.serve_forever()

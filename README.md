@@ -23,3 +23,16 @@ uv run run_evals.py --repeat 3 --report resultat.md   # och appenda till resulta
 ```
 
 Exit-kod 1 om något fall föll.
+
+Utvärderingen väntar upp till 10 sekunder på att botens HTTP-server ska svara,
+så kommandona kan köras direkt efter varandra. Om boten inte går att nå avslutas
+körningen med ett felmeddelande. Vid annan port eller adress, ange exempelvis
+`--url http://127.0.0.1:8001/chat`. Väntan gäller boten; Ollama och modellen
+måste också vara tillgängliga för att chattfallen ska fungera.
+
+## Stänga av
+
+```bash
+pkill -f bot/app.py
+```
+
