@@ -1,0 +1,9 @@
+[project]
+name = "homework-11"
+version = "0.1.0"
+description = "Eval av HW-07-chatboten"
+requires-python = ">=3.12"
+dependencies = [
+    "jinja2>=3.1",
+    "pyyaml>=6.0",
+]

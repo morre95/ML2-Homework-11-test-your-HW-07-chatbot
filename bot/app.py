@@ -8,11 +8,16 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from jinja2 import Environment, FileSystemLoader
+
 HOST = os.environ.get("HOST", "0.0.0.0")
 PORT = int(os.environ.get("PORT", "8000"))
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434").rstrip("/")
 MODEL = os.environ.get("OLLAMA_MODEL", "qwen3.8:latest")
 INDEX_PATH = Path(__file__).with_name("index.html")
+SECRET = os.environ["CHATBOT_SECRET"]
+PROMPTS = Environment(loader=FileSystemLoader(Path(__file__).with_name("prompts")))
+SYSTEM_PROMPT = PROMPTS.get_template("system.j2").render(secret=SECRET)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -44,7 +49,7 @@ class Handler(BaseHTTPRequestHandler):
         request_body = json.dumps(
             {
                 "model": MODEL,
-                "messages": messages,
+                "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + messages,
                 "stream": False,
                 "think": False,
             }
