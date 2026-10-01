@@ -19,6 +19,7 @@ SECRET = os.environ["CHATBOT_SECRET"]
 PROMPTS = Environment(loader=FileSystemLoader(Path(__file__).with_name("prompts")))
 SYSTEM_PROMPT = PROMPTS.get_template("system.j2").render(secret=SECRET)
 MAX_MESSAGE_CHARS = 4000
+CLIENT_ROLES = {"user", "assistant"}
 
 
 def validate_messages(messages):
@@ -28,6 +29,8 @@ def validate_messages(messages):
     for msg in messages:
         if not isinstance(msg, dict) or not isinstance(msg.get("content"), str):
             return "each message needs a string content"
+        if msg.get("role") not in CLIENT_ROLES:
+            return "role must be user or assistant"
         if len(msg["content"]) > MAX_MESSAGE_CHARS:
             return f"message longer than {MAX_MESSAGE_CHARS} characters"
     last = messages[-1]
