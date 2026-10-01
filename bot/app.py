@@ -15,9 +15,8 @@ PORT = int(os.environ.get("PORT", "8000"))
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434").rstrip("/")
 MODEL = os.environ.get("OLLAMA_MODEL", "qwen3.8:latest")
 INDEX_PATH = Path(__file__).with_name("index.html")
-SECRET = os.environ["CHATBOT_SECRET"]
 PROMPTS = Environment(loader=FileSystemLoader(Path(__file__).with_name("prompts")))
-SYSTEM_PROMPT = PROMPTS.get_template("system.j2").render(secret=SECRET)
+SYSTEM_PROMPT = PROMPTS.get_template("system.j2").render()
 MAX_MESSAGE_CHARS = 4000
 CLIENT_ROLES = {"user", "assistant"}
 
